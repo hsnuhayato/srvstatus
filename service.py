@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 # Getting SystemD services status and uptime
 # Alexey Nizhegolenko 2018
 # 2021 revrited with some fixes and for the Python3
-
 
 import os
 import re
@@ -10,13 +10,23 @@ import subprocess
 import configparser
 import parsedatetime
 from datetime import datetime
-
+# from subprocess import check_output
 
 def service_stat(service, user=False):
     if user:
-        out = subprocess.Popen(["systemctl", "--user", "status", service], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)  # NOQA
+        user_name = 'wu'
+        # user_id = check_output(['id', '-u', user_name]).decode().split('\n', maxsplit=1)[0]
+        # out = subprocess.Popen([
+        #     # 'sudo', '-u', user_name,
+        #     # 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{}/bus'.format(user_id),
+        #     'echo', 'macmac', '|', 'su', '-c',
+        #     '\'systemctl', '--user', 'status', service,'\'', user_name],
+        #                        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)  # NOQA
+        cmd = f"echo macmac | su -c 'systemctl --user status {service}' {user_name}"
+        out = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
     else:
-        out = subprocess.Popen(["systemctl", "status", service], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) # NOQA
+        out = subprocess.Popen(["systemctl", "status", service],
+                               stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) # NOQA
     output, err = out.communicate()
 
     service_regx = r"Loaded:.*\/([^ ]*);"
